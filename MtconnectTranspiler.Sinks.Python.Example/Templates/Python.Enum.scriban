@@ -1,4 +1,8 @@
 from enum import Enum, auto
+
+# Normative version: {{ source.normative_version }}
+# Deprecated version: {{ source.deprecated_version }}
+# Help URL: https://model.mtconnect.org/#Structure__{{ source.reference_id }}
 class {{ source.name | to_code_safe | to_pascal_case }}(Enum):
 {{for item in source.items}}
 	# {{item.original_name | to_code_safe | string.upcase}} Normative version: {{ item.normative_version }}

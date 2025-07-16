@@ -1,3 +1,25 @@
-"""
- TODO
-"""
+
+{{~ code_name = source.name | to_code_safe | string.remove "."
+~}}
+
+# Normative version: {{ source.normative_version }}
+# Deprecated version: {{ source.deprecated_version }}
+# Help URL: https://model.mtconnect.org/#Structure__{{ source.reference_id }}
+class {{code_name}}:
+    def __init__(self) -> None:
+		{{~ for item in source.properties ~}}
+        {{~ property_type_namespace = item.original_property_type | get_type_namespace | to_code_safe ~}}
+        {{~
+            if property_type_namespace
+                item_type_name = item.type | to_pascal_case | to_code_safe | string.remove "."
+            else
+                item_type_name = item.type | to_code_safe | string.remove "."
+            end
+        ~}}
+		{{~ item_code_name = item.name | to_code_safe | string.remove "." ~}}
+        # TESTTYPE: {{item.type}}
+        #{{item_code_name}} # type: {{ if property_type_namespace }}{{ property_type_namespace }}.{{ end }}{{ item_type_name }}
+        {{~ end ~}}
+        pass
+
+
