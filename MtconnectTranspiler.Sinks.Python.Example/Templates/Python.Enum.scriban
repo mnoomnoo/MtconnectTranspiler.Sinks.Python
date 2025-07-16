@@ -1,7 +1,7 @@
 from enum import Enum, auto
 class {{ source.name | to_code_safe | to_pascal_case }}(Enum):
 {{for item in source.items}}
-	# {{item.name | to_code_safe | to_pascal_case | string.upcase}}_NORMATIVE_VERSION: {{ item.normative_version }}
-	# {{item.name | to_code_safe | to_pascal_case | string.upcase}}_DEPRECATED_VERSION: {{ item.deprecated_version }}
-	{{item.name | to_code_safe | to_pascal_case | string.upcase}} = auto()
+	# {{item.original_name | to_code_safe | string.upcase}} Normative version: {{ item.normative_version }}
+	# {{item.original_name | to_code_safe | to_code_safe | string.upcase}} Deprecated version: {{ item.deprecated_version }}
+	{{item.original_name | to_code_safe | string.upcase}} = auto()
 {{ end }}
