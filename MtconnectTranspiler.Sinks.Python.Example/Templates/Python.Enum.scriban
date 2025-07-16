@@ -1,4 +1,7 @@
-class {{ source.name | to_code_safe | to_pascal_case }}(MTCEnum):
-	{{ for item in source.items }}
-	{{ item.name | to_code_safe | to_pascal_case }} = "{{ item.summary }}"
-	{{ end }}
+from enum import Enum, auto
+class {{ source.name | to_code_safe | to_pascal_case }}(Enum):
+{{for item in source.items}}
+	# {{item.name | to_code_safe | to_pascal_case | string.upcase}}_NORMATIVE_VERSION: {{ item.normative_version }}
+	# {{item.name | to_code_safe | to_pascal_case | string.upcase}}_DEPRECATED_VERSION: {{ item.deprecated_version }}
+	{{item.name | to_code_safe | to_pascal_case | string.upcase}} = auto()
+{{ end }}
