@@ -45,6 +45,13 @@ namespace MtconnectTranspiler.Sinks.Python.Example
             var regex = new Regex(@"\" + String.Join(@"|\", invlidFileCharacters), RegexOptions.Compiled);
             return regex.Replace(input, replaceBy);
         }
+        public static string ToModulePath(string filename)
+        {
+            if (string.IsNullOrEmpty(filename))
+                return filename;
+            // Convert path separators to dots and strip the .py extension
+            return Path.ChangeExtension(filename, null).Replace('/', '.').Replace('\\', '.');
+        }
         public static string ToPathSafe(string input, string replaceBy = "_")
         {
             if (string.IsNullOrEmpty(input))
@@ -167,6 +174,19 @@ namespace MtconnectTranspiler.Sinks.Python.Example
 
             _logger?.LogInformation("Saving Root Package...");
             _generator.ProcessTemplate(rootPackage, _generator.OutputPath, true);
+
+            _logger?.LogInformation("Writing __init__.py files...");
+            CreateInitFiles(_generator.OutputPath);
+        }
+
+        private static void CreateInitFiles(string outputPath)
+        {
+            foreach (var dir in Directory.EnumerateDirectories(outputPath, "*", SearchOption.AllDirectories).Prepend(outputPath))
+            {
+                var initFile = Path.Combine(dir, "__init__.py");
+                if (!File.Exists(initFile))
+                    File.WriteAllText(initFile, string.Empty);
+            }
         }
 
         private IEnumerable<PythonPackage> getPackages(XmiDocument model, UmlPackage package, string namespacePrefix = "Mtconnect")
