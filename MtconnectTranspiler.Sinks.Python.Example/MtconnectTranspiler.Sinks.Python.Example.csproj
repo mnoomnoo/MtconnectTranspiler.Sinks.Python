@@ -41,6 +41,12 @@
     <Content Include="Templates\NormativeRemarks.scriban">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Templates\PythonDocstring.scriban">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\PythonVersionRemarks.scriban">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Templates\UmlCommentsSummaryContent.scriban" />
     <Content Update="Templates\UmlCommentsSummaryContent.scriban">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -23,7 +23,7 @@ namespace MtconnectTranspiler.Sinks.Python.Example.Models
             get
             {
                 if (string.IsNullOrEmpty(_filename))
-                    _filename = $"MtconnectModel.cs";
+                    _filename = $"MtconnectModel.py";
                 return _filename;
             }
             set { _filename = value; }

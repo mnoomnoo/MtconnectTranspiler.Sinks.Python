@@ -1,0 +1,10 @@
+{{~ if $1.normative_version != "" || $1.deprecated_version != "" ~}}
+
+    Version:
+    {{~ if $1.normative_version != "" ~}}
+        Introduced: v{{ $1.normative_version }} https://model.mtconnect.org/#_Version_{{ $1.normative_version }}
+    {{~ end ~}}
+    {{~ if $1.deprecated_version != "" ~}}
+        Deprecated: v{{ $1.deprecated_version }} https://model.mtconnect.org/#_Version_{{ $1.deprecated_version }}
+    {{~ end ~}}
+{{~ end ~}}
