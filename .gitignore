@@ -363,6 +363,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/MtconnectTranspiler.Sinks.CSharp.Example/appsettings.Development.json
+
+
+appsettings.Development.json
 
 py_output
+
