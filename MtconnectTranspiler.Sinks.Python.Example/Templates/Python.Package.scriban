@@ -25,7 +25,7 @@ class {{ code_name }}Package:
     REFERENCE_ID: Literal["{{ source.reference_id }}"] = "{{ source.reference_id }}"
     HELP_URL: Literal["https://model.mtconnect.org/#Package__{{ source.reference_id }}"] = "https://model.mtconnect.org/#Package__{{ source.reference_id }}"
     NAME: Literal["{{ source.normative_name }}"] = "{{ source.normative_name }}"
-    SUMMARY: str = """{{ source.summary | string.replace "\"\"\"" "\\\"\\\"\\\"" }}"""
+    SUMMARY: str = r"""{{ source.summary | string.replace "\"\"\"" "\\\"\\\"\\\"" }}"""
 
     @property
     def packages(self) -> list:
@@ -41,7 +41,7 @@ class {{ code_name }}Package:
         return [
         {{~ for item in source.classes ~}}
 {{~ item_class_code_name = item.name | to_code_safe | string.remove "." ~}}
-            self.{{ item_class_code_name | string.downcase }},
+            self.{{ item_class_code_name | string.downcase | to_keyword_safe }},
         {{~ end ~}}
         ]
 
@@ -50,7 +50,7 @@ class {{ code_name }}Package:
         return [
         {{~ for item in source.enums ~}}
 {{~ item_enum_code_name = item.name | to_code_safe | string.remove "." ~}}
-            self.{{ item_enum_code_name | string.downcase }},
+            self.{{ item_enum_code_name | string.downcase | to_keyword_safe }},
         {{~ end ~}}
         ]
 
@@ -64,11 +64,11 @@ class {{ code_name }}Package:
         {{~ end ~}}
         {{~ for item in source.classes ~}}
 {{~ item_class_code_name = item.name | to_code_safe | string.remove "." ~}}
-        self._{{ item_class_code_name | string.downcase }}: Optional[{{ item_class_code_name }}] = None
+        self._{{ item_class_code_name | string.downcase | to_keyword_safe }}: Optional[{{ item_class_code_name }}] = None
         {{~ end ~}}
         {{~ for item in source.enums ~}}
 {{~ item_enum_code_name = item.name | to_code_safe | string.remove "." ~}}
-        self._{{ item_enum_code_name | string.downcase }}: Optional[{{ item_enum_code_name }}MetaClass] = None
+        self._{{ item_enum_code_name | string.downcase | to_keyword_safe }}: Optional[{{ item_enum_code_name }}MetaClass] = None
         {{~ end ~}}
         {{~ end ~}}
 
@@ -85,20 +85,20 @@ class {{ code_name }}Package:
     {{~ for item in source.classes ~}}
 {{~ item_class_code_name = item.name | to_code_safe | string.remove "." ~}}
     @property
-    def {{ item_class_code_name | string.downcase }}(self) -> {{ item_class_code_name }}:
+    def {{ item_class_code_name | string.downcase | to_keyword_safe }}(self) -> {{ item_class_code_name }}:
         """{{ include 'PythonDocstring.scriban' item?.summary }}"""
-        if self._{{ item_class_code_name | string.downcase }} is None:
-            self._{{ item_class_code_name | string.downcase }} = {{ item_class_code_name }}()
-        return self._{{ item_class_code_name | string.downcase }}
+        if self._{{ item_class_code_name | string.downcase | to_keyword_safe }} is None:
+            self._{{ item_class_code_name | string.downcase | to_keyword_safe }} = {{ item_class_code_name }}()
+        return self._{{ item_class_code_name | string.downcase | to_keyword_safe }}
 
     {{~ end ~}}
     {{~ for item in source.enums ~}}
 {{~ item_enum_code_name = item.name | to_code_safe | string.remove "." ~}}
     @property
-    def {{ item_enum_code_name | string.downcase }}(self) -> {{ item_enum_code_name }}MetaClass:
+    def {{ item_enum_code_name | string.downcase | to_keyword_safe }}(self) -> {{ item_enum_code_name }}MetaClass:
         """{{ include 'PythonDocstring.scriban' item?.summary }}"""
-        if self._{{ item_enum_code_name | string.downcase }} is None:
-            self._{{ item_enum_code_name | string.downcase }} = {{ item_enum_code_name }}MetaClass()
-        return self._{{ item_enum_code_name | string.downcase }}
+        if self._{{ item_enum_code_name | string.downcase | to_keyword_safe }} is None:
+            self._{{ item_enum_code_name | string.downcase | to_keyword_safe }} = {{ item_enum_code_name }}MetaClass()
+        return self._{{ item_enum_code_name | string.downcase | to_keyword_safe }}
 
     {{~ end ~}}

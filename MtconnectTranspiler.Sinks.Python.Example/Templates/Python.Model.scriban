@@ -35,4 +35,4 @@ class MtconnectModel:
             self._{{ item_code_name | string.downcase }}_package = {{ item_code_name }}Package()
         return self._{{ item_code_name | string.downcase }}_package
 
-    {{ end ~}}
+{{~ end ~}}

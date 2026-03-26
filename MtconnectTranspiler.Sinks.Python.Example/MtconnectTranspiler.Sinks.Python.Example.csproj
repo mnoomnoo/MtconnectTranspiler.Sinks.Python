@@ -38,6 +38,9 @@
     <Content Include="Templates\Python.Package.scriban">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Templates\Python.Example.scriban">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Templates\NormativeRemarks.scriban">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

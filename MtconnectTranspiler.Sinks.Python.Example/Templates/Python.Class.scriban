@@ -34,7 +34,7 @@ class {{ code_name }}:
 
     REFERENCE_ID: Literal["{{ source.reference_id }}"] = "{{ source.reference_id }}"
     HELP_URL: Literal["https://model.mtconnect.org/#Structure__{{ source.reference_id }}"] = "https://model.mtconnect.org/#Structure__{{ source.reference_id }}"
-    SUMMARY: str = """{{ source.summary | string.replace "\"\"\"" "\\\"\\\"\\\"" }}"""
+    SUMMARY: str = r"""{{ source.summary | string.replace "\"\"\"" "\\\"\\\"\\\"" }}"""
     NAME: Literal["{{ source.normative_name }}"] = "{{ source.normative_name }}"
     ACCESS_MODIFIER: Literal["{{ source.access_modifier }}"] = "{{ source.access_modifier }}"
     MODIFIER: Literal["{{ source.modifier }}"] = "{{ source.modifier }}"
@@ -56,10 +56,11 @@ class {{ code_name }}:
             {{~ for item in source.properties ~}}
 {{~ item_code_name = item.name | to_code_safe | string.remove "." ~}}
 {{~
+	item_base = item_code_name | string.downcase | to_keyword_safe
 	if item.association
-		item_attr = item_code_name | string.downcase + "_part"
+		item_attr = item_base + "_part"
 	else
-		item_attr = item_code_name | string.downcase
+		item_attr = item_base
 	end
 ~}}
                 self.{{ item_attr }},
@@ -89,7 +90,7 @@ class {{ code_name }}:
             {{ include 'PythonVersionRemarks.scriban' item }}"""
 
             NAME: Literal["{{ item.normative_name }}"] = "{{ item.normative_name }}"
-            SUMMARY: str = """{{ item.summary | string.replace "\"\"\"" "\\\"\\\"\\\"" }}"""
+            SUMMARY: str = r"""{{ item.summary | string.replace "\"\"\"" "\\\"\\\"\\\"" }}"""
             ACCESS_MODIFIER: Literal["{{ item.access_modifier }}"] = "{{ item.access_modifier }}"
             MODIFIER: Literal["{{ item.modifier }}"] = "{{ item.modifier }}"
             NORMATIVE_VERSION: Literal["{{ item.normative_version }}"] = "{{ item.normative_version }}"
@@ -111,11 +112,12 @@ class {{ code_name }}:
             {{~ for item in source.properties ~}}
 {{~ item_code_name = item.name | to_code_safe | string.remove "." ~}}
 {{~
+	item_base = item_code_name | string.downcase | to_keyword_safe
 	if item.association
-		item_attr = item_code_name | string.downcase + "_part"
+		item_attr = item_base + "_part"
 		item_cls = item_code_name + "PartProperty"
 	else
-		item_attr = item_code_name | string.downcase
+		item_attr = item_base
 		item_cls = item_code_name + "Property"
 	end
 ~}}
@@ -138,6 +140,6 @@ class {{ code_name }}:
     {{~ for constraint in source.constraints ~}}
     # {{ constraint.name }}
     # Specification Language: {{ constraint?.specification?.language ?? "Unspecified" }}
-    {{ constraint.name | string.downcase }}_rule: str = """{{ constraint?.raw_script | string.replace "\"\"\"" "\\\"\\\"\\\"" }}"""
+    {{ constraint.name | string.downcase }}_rule: str = r"""{{ constraint?.raw_script | string.replace "\"\"\"" "\\\"\\\"\\\"" }}"""
     {{~ end ~}}
     {{~ end ~}}

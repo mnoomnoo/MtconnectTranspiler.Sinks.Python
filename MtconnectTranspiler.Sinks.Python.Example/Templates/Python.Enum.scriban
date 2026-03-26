@@ -40,7 +40,7 @@ class {{ source.name | to_code_safe | to_pascal_case }}MetaClass:
     NAME: Literal["{{ source.name }}"] = "{{ source.name }}"
     NORMATIVE_VERSION: Literal["{{ source.normative_version }}"] = "{{ source.normative_version }}"
     DEPRECATED_VERSION: Literal["{{ source.deprecated_version }}"] = "{{ source.deprecated_version }}"
-    SUMMARY: str = """{{ source.summary | string.replace "\"\"\"" "\\\"\\\"\\\"" }}"""
+    SUMMARY: str = r"""{{ source.summary | string.replace "\"\"\"" "\\\"\\\"\\\"" }}"""
 
     {{~ for item in source.items ~}}
 {{~ item_code_name = item.original_name | to_code_safe ~}}
@@ -52,7 +52,7 @@ class {{ source.name | to_code_safe | to_pascal_case }}MetaClass:
         NAME: Literal["{{ item.original_name }}"] = "{{ item.original_name }}"
         NORMATIVE_VERSION: Literal["{{ item.normative_version }}"] = "{{ item.normative_version }}"
         DEPRECATED_VERSION: Literal["{{ item.deprecated_version }}"] = "{{ item.deprecated_version }}"
-        SUMMARY: str = """{{ item.summary | string.replace "\"\"\"" "\\\"\\\"\\\"" }}"""
+        SUMMARY: str = r"""{{ item.summary | string.replace "\"\"\"" "\\\"\\\"\\\"" }}"""
         VALUE = None  # TODO: Add value, based on type.
 
     {{~ end ~}}
@@ -63,7 +63,7 @@ class {{ source.name | to_code_safe | to_pascal_case }}MetaClass:
         {{~ else ~}}
         {{~ for item in source.items ~}}
 {{~ item_code_name = item.original_name | to_code_safe ~}}
-        self.{{ item_code_name | string.downcase }} = self.{{ item_code_name }}Value()
+        self.{{ item_code_name | string.downcase | to_keyword_safe }} = self.{{ item_code_name }}Value()
         {{~ end ~}}
         {{~ end ~}}
 
@@ -72,6 +72,6 @@ class {{ source.name | to_code_safe | to_pascal_case }}MetaClass:
         return [
         {{~ for item in source.items ~}}
 {{~ item_code_name = item.original_name | to_code_safe ~}}
-            self.{{ item_code_name | string.downcase }},
+            self.{{ item_code_name | string.downcase | to_keyword_safe }},
         {{~ end ~}}
         ]

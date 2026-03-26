@@ -17,6 +17,19 @@ namespace MtconnectTranspiler.Sinks.Python.Example
         public static bool CategoryContainsType(PythonEnum @enum, EnumItem item) => @enum.SubTypes.ContainsKey(item.Name);
         public static bool CategoryContainsValue(PythonEnum @enum, EnumItem item) => @enum.ValueTypes.ContainsKey(item.Name);
         public static bool EnumHasValues(PythonEnum @enum) => @enum.ValueTypes.Any();
+        private static readonly HashSet<string> _pythonKeywords = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "False", "None", "True", "and", "as", "assert", "async", "await",
+            "break", "class", "continue", "def", "del", "elif", "else", "except",
+            "finally", "for", "from", "global", "if", "import", "in", "is",
+            "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try",
+            "while", "with", "yield"
+        };
+        public static string ToKeywordSafe(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+            return _pythonKeywords.Contains(input) ? input + "_" : input;
+        }
         public static string ToCodeSafe(string input, string replaceBy = "_")
         {
             if (string.IsNullOrEmpty(input))
@@ -49,15 +62,22 @@ namespace MtconnectTranspiler.Sinks.Python.Example
         {
             if (string.IsNullOrEmpty(filename))
                 return filename;
-            // Convert path separators to dots and strip the .py extension
-            return Path.ChangeExtension(filename, null).Replace('/', '.').Replace('\\', '.');
+            // Strip extension, sanitize each path segment (dots inside a segment name would
+            // be misread as module separators by Python), then join with dots.
+            var noExt = Path.ChangeExtension(filename, null);
+            var segments = noExt.Replace('\\', '/').Split('/');
+            return string.Join(".", segments.Select(seg => seg.Replace('.', '_')));
         }
         public static string ToPathSafe(string input, string replaceBy = "_")
         {
             if (string.IsNullOrEmpty(input))
                 return input;
+            // Include ':' and '.' explicitly:
+            //   ':' — valid on Linux but illegal in Python module paths
+            //   '.' — dots in a name segment turn into false module separators in import paths
             var invalidFileCharacters = System.IO.Path
                 .GetInvalidFileNameChars()
+                .Concat(new char[] { ':', '.', '{', '}', '[', ']', '(', ')', '^', '`', '&', '+', '-', '!', '?', '%', '*', '<', '>', ',', '|', '=', ';', ' ' })
                 .ToArray();
             var regex = new Regex(@"\" + String.Join(@"|\", invalidFileCharacters), RegexOptions.Compiled);
             return regex.Replace(input, replaceBy);
@@ -174,6 +194,10 @@ namespace MtconnectTranspiler.Sinks.Python.Example
 
             _logger?.LogInformation("Saving Root Package...");
             _generator.ProcessTemplate(rootPackage, _generator.OutputPath, true);
+
+            _logger?.LogInformation("Saving Example File...");
+            var exampleFile = new PythonExample(model, model.Model, rootPackage.Packages);
+            _generator.ProcessTemplate(exampleFile, _generator.OutputPath, true);
 
             _logger?.LogInformation("Writing __init__.py files...");
             CreateInitFiles(_generator.OutputPath);

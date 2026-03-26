@@ -39,6 +39,28 @@ namespace MtconnectTranspiler.Sinks.Python.Example.Models
         /// <summary>
         /// Internal list of <see cref="PythonPackage"/>, used by <see cref="Packages"/>.
         /// </summary>
+        /// <inheritdoc />
+        /// <remarks>
+        /// Overridden to propagate the correct child namespace to sub-packages so
+        /// their <see cref="Filename"/> is computed relative to this package rather
+        /// than defaulting to the top-level "Mtconnect" namespace.
+        /// </remarks>
+        public override string Namespace
+        {
+            get => base.Namespace;
+            set
+            {
+                base.Namespace = value;
+                string childNamespace = $"{value}.{Name}";
+                foreach (var child in _packages)
+                    child.Namespace = childNamespace;
+                foreach (var cls in _classes)
+                    cls.Namespace = childNamespace;
+                foreach (var enm in _enums)
+                    enm.Namespace = childNamespace;
+            }
+        }
+
         protected List<PythonPackage> _packages = new List<PythonPackage>();
         /// <summary>
         /// Collection of <inheritdoc cref="PythonPackage"/>
