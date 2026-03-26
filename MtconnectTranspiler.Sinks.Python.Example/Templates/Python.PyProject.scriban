@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pymtconnect"
+version = "0.1.0"
+description = "Python model classes generated from the MTConnect SysML specification"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+
+[tool.setuptools]
+py-modules = ["MtconnectModel"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["__pycache__*", "example*"]

@@ -199,6 +199,10 @@ namespace MtconnectTranspiler.Sinks.Python.Example
             var exampleFile = new PythonExample(model, model.Model, rootPackage.Packages);
             _generator.ProcessTemplate(exampleFile, _generator.OutputPath, true);
 
+            _logger?.LogInformation("Writing pyproject.toml...");
+            var projectFile = new PythonProject(model, model.Model);
+            _generator.ProcessTemplate(projectFile, _generator.OutputPath, true);
+
             _logger?.LogInformation("Writing __init__.py files...");
             CreateInitFiles(_generator.OutputPath);
         }
