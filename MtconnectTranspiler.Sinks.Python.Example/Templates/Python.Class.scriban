@@ -127,6 +127,32 @@ class {{ code_name }}:
 
     properties: {{ code_name }}Properties = {{ code_name }}Properties()
 
+    def __init__(self):
+        """Initialise instance data fields to ``None``.
+
+        Each field name equals the property's normative ``NAME`` constant,
+        so it matches JSON attribute keys returned by an MTConnect agent.
+        Class-level metadata constants (``NAME``, ``NORMATIVE_VERSION``, etc.)
+        are unaffected — they remain accessible on the class itself.
+        """
+        for prop in self.properties.properties:
+            object.__setattr__(self, prop.NAME, None)
+
+    def from_dict(self, d: dict) -> "{{ code_name }}":
+        """Populate instance data fields from dictionary *d*.
+
+        Keys in *d* are matched against each property's ``NAME`` constant.
+        Unrecognised keys are silently ignored; missing keys leave the
+        corresponding field as ``None``.  Returns *self* for chaining::
+
+            device = DeviceClass().from_dict({"name": "Mill", "uuid": "abc"})
+            print(device.name)   # "Mill"
+        """
+        for prop in self.properties.properties:
+            if prop.NAME in d:
+                object.__setattr__(self, prop.NAME, d[prop.NAME])
+        return self
+
     RULES: list = [
         {{~ if source.constraints.size > 0 ~}}
         {{~ for constraint in source.constraints ~}}
