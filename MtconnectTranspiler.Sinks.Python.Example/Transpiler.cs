@@ -195,6 +195,10 @@ namespace MtconnectTranspiler.Sinks.Python.Example
             _logger?.LogInformation("Saving Root Package...");
             _generator.ProcessTemplate(rootPackage, _generator.OutputPath, true);
 
+            _logger?.LogInformation("Saving Client Module...");
+            var clientFile = new PythonClient(model, model.Model, rootPackage.Packages);
+            _generator.ProcessTemplate(clientFile, _generator.OutputPath, true);
+
             _logger?.LogInformation("Saving Example File...");
             var exampleFile = new PythonExample(model, model.Model, rootPackage.Packages);
             _generator.ProcessTemplate(exampleFile, _generator.OutputPath, true);
