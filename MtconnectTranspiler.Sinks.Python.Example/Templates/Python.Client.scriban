@@ -17,7 +17,7 @@ import urllib.request
 import urllib.parse
 from typing import Optional
 
-# Ensure the package root is on the Python path when run directly
+# Ensure the package root is on the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # MTConnectDevices response-document model classes

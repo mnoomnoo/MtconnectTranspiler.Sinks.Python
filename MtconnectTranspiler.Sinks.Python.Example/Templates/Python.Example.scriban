@@ -18,13 +18,12 @@ from MtconnectModel import MtconnectModel
 # Any project can import these independently — no need to copy example.py.
 from mtconnect_client import (
     probe, current, sample,
-    _header_meta, _device_meta, _evt_meta, _cond_meta,
+    _header_meta, _device_meta, _doc_meta, _evt_meta, _cond_meta,
     _SENDER_ATTR, _VERSION_ATTR, _DS_NAME, _DS_UUID,
     _OBS_ID, _OBS_TS, _COND_STATE, _COND_NC,
 )
 
-# Schema-only imports — just for introspecting the model in main()
-from Classes.MTConnectDevicesResponseDocument.MTConnectDevicesClass import MTConnectDevicesClass
+# Schema-only imports — needed for class-level NORMATIVE_VERSION access
 from Classes.ObservationInformationModel.EventClass import EventClass
 from Classes.ObservationInformationModel.ConditionClass import ConditionClass
 
@@ -70,9 +69,8 @@ def main() -> None:
     _show_model_overview(model)
 
     # --- Show the model schema for the probe response document ---
-    doc_meta = MTConnectDevicesClass()
-    print(f"\nMTConnectDevices response document schema (v{doc_meta.NORMATIVE_VERSION}):")
-    for prop in doc_meta.properties.properties:
+    print(f"\nMTConnectDevices response document schema (v{_doc_meta.NORMATIVE_VERSION}):")
+    for prop in _doc_meta.properties.properties:
         print(f"  {prop.NAME:<25s} → {prop.TYPE}")
 
     # --- Show Event and Condition schemas from generated classes ---

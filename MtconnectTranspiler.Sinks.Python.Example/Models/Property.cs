@@ -33,6 +33,12 @@ namespace MtconnectTranspiler.Sinks.Python.Models
 
         public string DefaultValue { get; set; }
 
+        /// <summary>
+        /// UML multiplicity expressed as a range string, e.g. <c>"0..*"</c>, <c>"1..1"</c>.
+        /// Empty string when neither bound is specified in the model.
+        /// </summary>
+        public string Multiplicity { get; set; }
+
         private XmiElement? _remoteType { get; set; }
 
         /// <summary>
@@ -69,7 +75,9 @@ namespace MtconnectTranspiler.Sinks.Python.Models
                 DefaultValue = source.DefaultValue?.Name;
             }
 
-            // TODO: Determine multiplicity from lowerValue and upperValue
+            // Determine multiplicity from lowerValue (upperValue is not exposed on UmlProperty in this SDK version)
+            string lower = source.LowerValue?.Value;
+            Multiplicity = lower != null ? $"{lower}..*" : "";
         }
 
     }
