@@ -13,6 +13,7 @@ from __future__ import annotations
 import sys
 import os
 import json
+import re
 import requests
 from typing import Generator, Optional, Tuple
 
@@ -294,8 +295,17 @@ def stream_sample(
         timeout=timeout,
     ) as resp:
         resp.raise_for_status()
+        ct = resp.headers.get("Content-Type", "")
+        m = re.search(r"boundary=([^\s;]+)", ct)
+        boundary = m.group(1).encode() if m else None
+
         for raw_line in resp.iter_lines():
             if not raw_line:
+                continue
+            # Skip multipart boundary and MIME header lines
+            if boundary and raw_line.startswith(b"--" + boundary):
+                continue
+            if b":" in raw_line and b"{" not in raw_line:
                 continue
             try:
                 data = json.loads(raw_line)
