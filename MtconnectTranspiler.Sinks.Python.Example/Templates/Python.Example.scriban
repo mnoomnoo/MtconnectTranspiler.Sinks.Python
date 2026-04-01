@@ -16,7 +16,7 @@ from mtconnect_client import (
     probe, current, sample,
     _header_meta, _device_meta, _doc_meta, _evt_meta, _cond_meta,
     _SENDER_ATTR, _VERSION_ATTR, _DS_NAME, _DS_UUID,
-    _OBS_ID, _OBS_TS, _COND_STATE, _COND_NC,
+    _OBS_ID, _OBS_TS, _OBS_SEQ, _COND_STATE, _COND_NC,
 )
 
 # Schema-only imports — needed for class-level NORMATIVE_VERSION access
@@ -51,6 +51,46 @@ def _show_model_overview(model: MtconnectModel) -> None:
         print(f"    {prop.NAME:<30s}  type={prop.TYPE}")
     {{~ end ~}}
     {{~ end ~}}
+
+
+def stream_samples(agent_url: str, num_polls: int = 5, count_per_poll: int = 100) -> None:
+    """Poll /sample repeatedly to demonstrate incremental MTConnect streaming.
+
+    Uses hdr.nextSequence from each response as the ``from`` parameter of the
+    next request, giving only observations that arrived since the last poll.
+    """
+    try:
+        hdr, _, _ = current(agent_url)
+        next_seq = hdr.nextSequence
+    except Exception as exc:
+        print(f"Could not reach agent for streaming current: {exc}")
+        return
+
+    print(f"\nStreaming samples (up to {num_polls} polls, {count_per_poll} obs each):")
+    for poll in range(num_polls):
+        try:
+            hdr, events, conditions = sample(agent_url, from_seq=next_seq, count=count_per_poll)
+        except Exception as exc:
+            print(f"  Poll {poll + 1}: error — {exc}")
+            break
+
+        total = len(events) + len(conditions)
+        if total == 0:
+            print(f"  Poll {poll + 1}: no new observations (seq={next_seq}), stopping.")
+            break
+
+        new_seq = hdr.nextSequence
+        seq_nums = [getattr(o, _OBS_SEQ, None) for o in events + conditions]
+        seq_nums = [s for s in seq_nums if s is not None]
+        seq_range = f"{min(seq_nums)}–{max(seq_nums)}" if seq_nums else "n/a"
+
+        print(f"  Poll {poll + 1}: {len(events)} events, {len(conditions)} conditions  "
+              f"seq {seq_range}  (nextSequence={new_seq})")
+
+        if new_seq == next_seq:
+            print(f"  nextSequence unchanged ({next_seq}), stopping.")
+            break
+        next_seq = new_seq
 
 
 # -------------------------------------------------------------------------
@@ -128,6 +168,9 @@ def main() -> None:
     except Exception as exc:
         print(f"Could not reach agent for sample: {exc}")
         print("(Pass a reachable agent URL as the first argument)")
+
+    # --- Streaming demo — incremental sample polling ---
+    stream_samples(agent_url)
 
 
 if __name__ == "__main__":
