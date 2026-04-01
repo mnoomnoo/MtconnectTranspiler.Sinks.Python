@@ -13,7 +13,7 @@ from MtconnectModel import MtconnectModel
 # All agent-communication helpers live in the generated client module.
 # Any project can import these independently — no need to copy example.py.
 from mtconnect_client import (
-    probe, current, sample,
+    probe, current, sample, stream_sample,
     _header_meta, _device_meta, _doc_meta, _evt_meta, _cond_meta,
     _SENDER_ATTR, _VERSION_ATTR, _DS_NAME, _DS_UUID,
     _OBS_ID, _OBS_TS, _OBS_SEQ, _COND_STATE, _COND_NC,
@@ -53,44 +53,37 @@ def _show_model_overview(model: MtconnectModel) -> None:
     {{~ end ~}}
 
 
-def stream_samples(agent_url: str, num_polls: int = 5, count_per_poll: int = 100) -> None:
-    """Poll /sample repeatedly to demonstrate incremental MTConnect streaming.
+def stream_samples(agent_url: str, max_chunks: int = 5, interval_ms: int = 1000) -> None:
+    """Demonstrate true HTTP streaming via the :func:`stream_sample` generator.
 
-    Uses hdr.nextSequence from each response as the ``from`` parameter of the
-    next request, giving only observations that arrived since the last poll.
+    A single TCP connection is opened to ``/sample?interval=<ms>``; the agent
+    pushes successive JSON documents down that connection without polling.
+
+    Parameters
+    ----------
+    max_chunks : int
+        Stop after this many streamed documents (0 = run until interrupted).
+    interval_ms : int
+        Milliseconds between agent pushes (MTConnect ``interval`` parameter).
     """
+    print(f"\nTrue HTTP streaming ({max_chunks} chunks, interval={interval_ms} ms):")
     try:
-        hdr, _, _ = current(agent_url)
-        next_seq = hdr.nextSequence
+        chunk_num = 0
+        for hdr, events, conditions in stream_sample(agent_url, interval=interval_ms):
+            chunk_num += 1
+            seq_nums = [getattr(o, _OBS_SEQ, None) for o in events + conditions]
+            seq_nums = [s for s in seq_nums if s is not None]
+            seq_range = f"{min(seq_nums)}–{max(seq_nums)}" if seq_nums else "n/a"
+
+            print(f"  Chunk {chunk_num}: {len(events)} events, {len(conditions)} conditions  "
+                  f"seq {seq_range}  (nextSequence={hdr.nextSequence})")
+
+            if max_chunks and chunk_num >= max_chunks:
+                break
+    except KeyboardInterrupt:
+        print("  Streaming interrupted.")
     except Exception as exc:
-        print(f"Could not reach agent for streaming current: {exc}")
-        return
-
-    print(f"\nStreaming samples (up to {num_polls} polls, {count_per_poll} obs each):")
-    for poll in range(num_polls):
-        try:
-            hdr, events, conditions = sample(agent_url, from_seq=next_seq, count=count_per_poll)
-        except Exception as exc:
-            print(f"  Poll {poll + 1}: error — {exc}")
-            break
-
-        total = len(events) + len(conditions)
-        if total == 0:
-            print(f"  Poll {poll + 1}: no new observations (seq={next_seq}), stopping.")
-            break
-
-        new_seq = hdr.nextSequence
-        seq_nums = [getattr(o, _OBS_SEQ, None) for o in events + conditions]
-        seq_nums = [s for s in seq_nums if s is not None]
-        seq_range = f"{min(seq_nums)}–{max(seq_nums)}" if seq_nums else "n/a"
-
-        print(f"  Poll {poll + 1}: {len(events)} events, {len(conditions)} conditions  "
-              f"seq {seq_range}  (nextSequence={new_seq})")
-
-        if new_seq == next_seq:
-            print(f"  nextSequence unchanged ({next_seq}), stopping.")
-            break
-        next_seq = new_seq
+        print(f"  Streaming error — {exc}")
 
 
 # -------------------------------------------------------------------------
@@ -169,7 +162,7 @@ def main() -> None:
         print(f"Could not reach agent for sample: {exc}")
         print("(Pass a reachable agent URL as the first argument)")
 
-    # --- Streaming demo — incremental sample polling ---
+    # --- Streaming demo — single kept-alive connection, agent pushes chunks ---
     stream_samples(agent_url)
 
 
