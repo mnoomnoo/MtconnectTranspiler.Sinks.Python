@@ -117,7 +117,7 @@ namespace MtconnectTranspiler.Sinks.Python.Example
         private readonly IScribanTemplateGenerator _generator;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="projectPath"></param>
         public Transpiler(IScribanTemplateGenerator generator, ILogger<ITranspilerSink>? logger = default)
@@ -185,30 +185,33 @@ namespace MtconnectTranspiler.Sinks.Python.Example
                 }
             }
 
+            string outputPath = Path.Combine(_generator.OutputPath, "pymtconnect");
+            Directory.CreateDirectory(outputPath);
+
             _logger?.LogInformation("Saving Packages...");
-            _generator.ProcessTemplate(allPackages, Path.Combine(_generator.OutputPath, "Packages"), true);
+            _generator.ProcessTemplate(allPackages, Path.Combine(outputPath, "Packages"), true);
             _logger?.LogInformation("Saving Classes...");
-            _generator.ProcessTemplate(allClasses, Path.Combine(_generator.OutputPath, "Classes"), true);
+            _generator.ProcessTemplate(allClasses, Path.Combine(outputPath, "Classes"), true);
             _logger?.LogInformation("Saving Enums...");
-            _generator.ProcessTemplate(allEnumerations, Path.Combine(_generator.OutputPath, "Enums"), true);
+            _generator.ProcessTemplate(allEnumerations, Path.Combine(outputPath, "Enums"), true);
 
             _logger?.LogInformation("Saving Root Package...");
-            _generator.ProcessTemplate(rootPackage, _generator.OutputPath, true);
+            _generator.ProcessTemplate(rootPackage, outputPath, true);
 
             _logger?.LogInformation("Saving Client Module...");
             var clientFile = new PythonClient(model, model.Model, rootPackage.Packages);
-            _generator.ProcessTemplate(clientFile, _generator.OutputPath, true);
+            _generator.ProcessTemplate(clientFile, outputPath, true);
 
             _logger?.LogInformation("Saving Example File...");
             var exampleFile = new PythonExample(model, model.Model, rootPackage.Packages);
-            _generator.ProcessTemplate(exampleFile, _generator.OutputPath, true);
+            _generator.ProcessTemplate(exampleFile, outputPath, true);
 
             _logger?.LogInformation("Writing pyproject.toml...");
             var projectFile = new PythonProject(model, model.Model);
             _generator.ProcessTemplate(projectFile, _generator.OutputPath, true);
 
             _logger?.LogInformation("Writing __init__.py files...");
-            CreateInitFiles(_generator.OutputPath);
+            CreateInitFiles(outputPath);
         }
 
         private static void CreateInitFiles(string outputPath)
