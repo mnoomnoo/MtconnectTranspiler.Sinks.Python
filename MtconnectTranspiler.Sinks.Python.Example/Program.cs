@@ -14,14 +14,15 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        if (args.Length == 0) throw new ArgumentNullException(nameof(args), "Missing projectPath argument");
+        if (args.Length == 0) throw new ArgumentNullException(nameof(args), "Missing output directory argument");
 
-        string projectPath = args[0];
-        if (!Directory.Exists(projectPath))
+        string outputDir = args[0];
+        if (!Directory.Exists(outputDir))
         {
-            Consoul.Write("Creating project path: " + projectPath);
-            Directory.CreateDirectory(projectPath);
+            Consoul.Write("Creating project output path: " + outputDir);
+            Directory.CreateDirectory(outputDir);
         }
+
         IConfiguration configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
 #if DEBUG
@@ -56,7 +57,7 @@ internal class Program
                         .AddCodeFormatter("python_formatter", new PythonCodeFormatter())
                     )
                     .ConfigureGenerator((options) => {
-                        options.OutputPath = configuration["OutputPath"];
+                        options.OutputPath = outputDir;
                     });
             })
             .AddScoped<Transpiler>()
@@ -69,13 +70,19 @@ internal class Program
 
         // NOTE: The GitHubRelease can be a reference to a specific tag referring to the version in which to download.
         TranspilerDispatcherOptions? dispatchOptions = null;
-        string modelPath = configuration["ModelPath"];
-        if (!string.IsNullOrEmpty(modelPath))
-        {
-            if (!File.Exists(modelPath)) throw new FileNotFoundException(modelPath);
 
-            dispatchOptions = new FromFileOptions() { Filepath = modelPath };
-            Consoul.Write("Dispatching from file: " + modelPath);
+        string modelDir = "";
+        if (args.Length > 1)
+        {
+            modelDir = args[1];
+        }
+
+        if (!string.IsNullOrEmpty(modelDir))
+        {
+            if (!File.Exists(modelDir)) throw new FileNotFoundException(modelDir);
+
+            dispatchOptions = new FromFileOptions() { Filepath = modelDir };
+            Consoul.Write("Dispatching from file: " + modelDir);
         }
         else
         {
