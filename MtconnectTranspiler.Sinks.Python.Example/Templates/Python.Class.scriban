@@ -154,7 +154,7 @@ class {{ code_name }}:
             {{~ # Gap 2: import parent class when this class has a generalization ~}}
             {{~ if has_generalization && generalization_type_namespace && generalization_type_namespace != "" ~}}
             {{~ gen_ns_last = generalization_type_namespace | string.split "." | array.last ~}}
-            from Classes.{{ gen_ns_last }}.{{ generalization_type_name }} import {{ generalization_type_name }} as _GenParent
+            from pymtconnect.Classes.{{ gen_ns_last }}.{{ generalization_type_name }} import {{ generalization_type_name }} as _GenParent
             {{~ end ~}}
             {{~ # Gap 3: import each complex-property type, using an alias when the class name collides ~}}
             {{~ for item in complex_props ~}}
@@ -162,9 +162,9 @@ class {{ code_name }}:
             {{~ item_tname = item.type | to_pascal_case | to_code_safe | string.remove "." ~}}
             {{~ ns_last = prop_ns | string.split "." | array.last ~}}
             {{~ if tname_counts[item_tname] > 1 ~}}
-            from Classes.{{ ns_last }}.{{ item_tname }} import {{ item_tname }} as {{ ns_last }}_{{ item_tname }}
+            from pymtconnect.Classes.{{ ns_last }}.{{ item_tname }} import {{ item_tname }} as {{ ns_last }}_{{ item_tname }}
             {{~ else ~}}
-            from Classes.{{ ns_last }}.{{ item_tname }} import {{ item_tname }}
+            from pymtconnect.Classes.{{ ns_last }}.{{ item_tname }} import {{ item_tname }}
             {{~ end ~}}
             {{~ end ~}}
             cls._DEEP_TYPES = {

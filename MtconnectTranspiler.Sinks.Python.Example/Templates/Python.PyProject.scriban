@@ -10,9 +10,6 @@ license = { text = "Apache-2.0" }
 requires-python = ">=3.10"
 dependencies = ["requests>=2.28"]
 
-[tool.setuptools]
-py-modules = ["MtconnectModel"]
-
 [tool.setuptools.packages.find]
 where = ["."]
 exclude = ["__pycache__*", "example*"]

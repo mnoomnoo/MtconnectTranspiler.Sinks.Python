@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Optional
 {{~ for item in source.packages ~}}
 {{~ item_code_name = item.name | to_code_safe | string.remove "." ~}}
-from Packages.{{ item.filename | to_module_path }} import {{ item_code_name }}Package
+from pymtconnect.Packages.{{ item.filename | to_module_path }} import {{ item_code_name }}Package
 {{~ end ~}}
 
 

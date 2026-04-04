@@ -5,15 +5,15 @@ from __future__ import annotations
 from typing import Literal, Optional
 {{~ for item in source.packages ~}}
 {{~ item_code_name = item.name | to_code_safe | string.remove "." ~}}
-from Packages.{{ item.filename | to_module_path }} import {{ item_code_name }}Package
+from pymtconnect.Packages.{{ item.filename | to_module_path }} import {{ item_code_name }}Package
 {{~ end ~}}
 {{~ for item in source.classes ~}}
 {{~ item_class_code_name = item.name | to_code_safe | string.remove "." ~}}
-from Classes.{{ item.filename | to_module_path }} import {{ item_class_code_name }}
+from pymtconnect.Classes.{{ item.filename | to_module_path }} import {{ item_class_code_name }}
 {{~ end ~}}
 {{~ for item in source.enums ~}}
 {{~ item_enum_code_name = item.name | to_code_safe | string.remove "." ~}}
-from Enums.{{ item.filename | to_module_path }} import {{ item_enum_code_name }}, {{ item_enum_code_name }}MetaClass
+from pymtconnect.Enums.{{ item.filename | to_module_path }} import {{ item_enum_code_name }}, {{ item_enum_code_name }}MetaClass
 {{~ end ~}}
 
 
