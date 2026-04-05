@@ -210,6 +210,10 @@ namespace MtconnectTranspiler.Sinks.Python.Example
             var projectFile = new PythonProject(model, model.Model);
             _generator.ProcessTemplate(projectFile, _generator.OutputPath, true);
 
+            _logger?.LogInformation("Writing docs/conf.py...");
+            var confFile = new PythonConf(model, model.Model);
+            _generator.ProcessTemplate(confFile, Path.Combine(_generator.OutputPath, "docs"), true);
+
             _logger?.LogInformation("Writing __init__.py files...");
             CreateInitFiles(outputPath);
         }

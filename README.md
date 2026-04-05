@@ -10,6 +10,30 @@ First argument is the directory to place the generated output. The second direct
 Example: `"commandLineArgs":
         "\"$(SolutionDir)my_output\" \"/path/to/my/model/MTConnectSysMLModel.xml\""`
 
+# Generate Sphinx documentation
+
+After running the transpiler, a `docs/conf.py` is written to the output directory alongside `pymtconnect/`.
+
+## Prerequisites
+
+```bash
+pip install sphinx
+```
+
+## Build the docs
+
+From the output directory (the one containing `pymtconnect/` and `docs/`):
+
+```bash
+# Auto-discover modules and write .rst stubs into docs/
+sphinx-apidoc -o docs pymtconnect
+
+# Build HTML output
+sphinx-build -b html docs docs/_build/html
+```
+
+Open `docs/_build/html/index.html` in a browser to view the result.
+
 # Build and upload Python package
 
 ## Prerequisites
