@@ -28,6 +28,8 @@ Output is written to `dist/`.
 
 https://test.pypi.org/help/#apitoken shows how to setup PyPI API tokens for uploading
 
+Check version number in pyproject.toml (move it up, PyPI wont overwrite a package)
+
 ### Upload to TestPyPI:
 
 ```bash
