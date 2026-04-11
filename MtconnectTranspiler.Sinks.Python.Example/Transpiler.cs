@@ -214,6 +214,10 @@ namespace MtconnectTranspiler.Sinks.Python.Example
             var currentExampleFile = new PythonCurrentExample(model, model.Model, rootPackage.Packages);
             _generator.ProcessTemplate(currentExampleFile, outputPath, true);
 
+            _logger?.LogInformation("Saving Streaming Example File...");
+            var streamingExampleFile = new PythonStreamingExample(model, model.Model, rootPackage.Packages);
+            _generator.ProcessTemplate(streamingExampleFile, outputPath, true);
+
             _logger?.LogInformation("Writing pyproject.toml...");
             var projectFile = new PythonProject(model, model.Model);
             _generator.ProcessTemplate(projectFile, _generator.OutputPath, true);
