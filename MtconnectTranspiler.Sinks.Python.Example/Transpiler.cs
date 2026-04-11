@@ -210,6 +210,10 @@ namespace MtconnectTranspiler.Sinks.Python.Example
             var probeExampleFile = new PythonProbeDeepExample(model, model.Model, rootPackage.Packages);
             _generator.ProcessTemplate(probeExampleFile, outputPath, true);
 
+            _logger?.LogInformation("Saving Current Example File...");
+            var currentExampleFile = new PythonCurrentExample(model, model.Model, rootPackage.Packages);
+            _generator.ProcessTemplate(currentExampleFile, outputPath, true);
+
             _logger?.LogInformation("Writing pyproject.toml...");
             var projectFile = new PythonProject(model, model.Model);
             _generator.ProcessTemplate(projectFile, _generator.OutputPath, true);
