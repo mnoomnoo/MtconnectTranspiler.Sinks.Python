@@ -26,6 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Templates\Python.Base.scriban">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Templates\Python.Model.scriban">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

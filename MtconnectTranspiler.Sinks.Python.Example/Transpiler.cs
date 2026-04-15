@@ -82,6 +82,33 @@ namespace MtconnectTranspiler.Sinks.Python.Example
             var regex = new Regex(@"\" + String.Join(@"|\", invalidFileCharacters), RegexOptions.Compiled);
             return regex.Replace(input, replaceBy);
         }
+        public static string ToSnakeCase(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+            return input.ToSnakeCase();
+        }
+        /// <summary>
+        /// Maps a SysML / C#-derived type name to the corresponding Python built-in
+        /// or strips the <c>MetaClass</c> suffix for enum references.
+        /// </summary>
+        public static string ToPythonTypeName(string typeName)
+        {
+            if (string.IsNullOrEmpty(typeName)) return "object";
+            return typeName switch
+            {
+                "String"         => "str",
+                "Boolean"        => "bool",
+                "Integer"        => "int",
+                "Float"          => "float",
+                "float[]"        => "list",
+                "float[3]"       => "list",
+                "DateTime"       => "str",
+                "DateTimeOffset" => "str",
+                "object"         => "object",
+                _ when typeName.EndsWith("MetaClass") => typeName[..^"MetaClass".Length],
+                _ => typeName,
+            };
+        }
         public static string? GetTypeNamespace(string referenceId)
             => TypeCache.GetTypeNamespaceFromId(referenceId);
         public static string[] GetClassNamespaces(PythonClass cSharpClass)
@@ -194,6 +221,9 @@ namespace MtconnectTranspiler.Sinks.Python.Example
             _generator.ProcessTemplate(allClasses, Path.Combine(outputPath, "Classes"), true);
             _logger?.LogInformation("Saving Enums...");
             _generator.ProcessTemplate(allEnumerations, Path.Combine(outputPath, "Enums"), true);
+
+            _logger?.LogInformation("Writing base.py...");
+            _generator.ProcessTemplate(new PythonBase(), outputPath, true);
 
             _logger?.LogInformation("Saving Root Package...");
             _generator.ProcessTemplate(rootPackage, outputPath, true);
