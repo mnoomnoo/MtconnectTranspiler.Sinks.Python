@@ -11,7 +11,7 @@ enum_props   = []
 simple_props = []
 seen_names   = {}
 for item in source.properties
-    if item.deprecated_version != ""
+    if item.deprecated_reference != null
         continue
     end
     snake_name = item.normative_name | to_snake_case | to_keyword_safe

@@ -272,7 +272,7 @@ namespace MtconnectTranspiler.Sinks.Python.Example
         /// </summary>
         private static bool ShouldGenerateClass(PythonClass cls, HashSet<string> generalizationNames)
         {
-            bool hasProperties = cls.Properties.Any(p => string.IsNullOrEmpty(p.DeprecatedVersion));
+            bool hasProperties = cls.Properties.Any(p => p.DeprecatedReference == null);
             bool isParent = generalizationNames.Contains(cls.Name);
             return hasProperties || isParent;
         }
