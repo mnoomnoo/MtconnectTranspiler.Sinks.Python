@@ -164,7 +164,7 @@ namespace MtconnectTranspiler.Sinks.Python.Example
 
             //// Process the template into enum files
             var allPackages = new List<PythonPackage>();
-            var allClasses = new List<PythonClass>();
+            var allClassesRaw = new List<PythonClass>();
             var allEnumerations = new List<PythonEnum>();
             // TODO: Add Operations; aka functions
             MtconnectModel rootPackage = new MtconnectModel(model, model.Model);
@@ -176,10 +176,10 @@ namespace MtconnectTranspiler.Sinks.Python.Example
                 if (subpackages.Any())
                     allPackages.AddRange(subpackages);
 
-                // Classes
+                // Classes — collect all first, filter in second pass
                 var classes = getClasses(model, package);
                 if (classes.Any())
-                    allClasses.AddRange(classes);
+                    allClassesRaw.AddRange(classes);
 
                 // Enumerations
                 var enumerations = getEnums(model, package);
@@ -199,10 +199,10 @@ namespace MtconnectTranspiler.Sinks.Python.Example
                         if (subpackages.Any())
                             allPackages.AddRange(subpackages);
 
-                        // Classes
+                        // Classes — collect all first, filter in second pass
                         var classes = getClasses(model, package);
                         if (classes.Any())
-                            allClasses.AddRange(classes);
+                            allClassesRaw.AddRange(classes);
 
                         // Enumerations
                         var enumerations = getEnums(model, package);
@@ -211,6 +211,15 @@ namespace MtconnectTranspiler.Sinks.Python.Example
                     }
                 }
             }
+
+            // Second pass: build the set of names referenced as generalizations,
+            // then filter out classes that have no properties AND are not parents.
+            var generalizationNames = new HashSet<string>(
+                allClassesRaw
+                    .Where(c => !string.IsNullOrEmpty(c.Generalization))
+                    .Select(c => c.Generalization),
+                StringComparer.Ordinal);
+            var allClasses = allClassesRaw.Where(c => ShouldGenerateClass(c, generalizationNames)).ToList();
 
             string outputPath = Path.Combine(_generator.OutputPath, "pymtconnect");
             Directory.CreateDirectory(outputPath);
@@ -254,6 +263,18 @@ namespace MtconnectTranspiler.Sinks.Python.Example
 
             _logger?.LogInformation("Writing __init__.py files...");
             CreateInitFiles(outputPath);
+        }
+
+        /// <summary>
+        /// Returns true if the class should be generated.
+        /// Skips classes that have no non-deprecated properties AND are not used as a parent
+        /// by any other class — they would produce an empty file with no purpose.
+        /// </summary>
+        private static bool ShouldGenerateClass(PythonClass cls, HashSet<string> generalizationNames)
+        {
+            bool hasProperties = cls.Properties.Any(p => string.IsNullOrEmpty(p.DeprecatedVersion));
+            bool isParent = generalizationNames.Contains(cls.Name);
+            return hasProperties || isParent;
         }
 
         private static void CreateInitFiles(string outputPath)
