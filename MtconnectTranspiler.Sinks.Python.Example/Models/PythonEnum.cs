@@ -76,15 +76,24 @@ namespace MtconnectTranspiler.Sinks.Python.Models
         /// <param name="source">The source <see cref="UmlEnumeration"/> to convert into an <see cref="PythonEnum"/></param>
         public PythonEnum(XmiDocument model, UmlEnumeration source) : this(model, source, source.Name)
         {
-            AddRange(model, source.Items);
-
             var gen = source.Generalization?.FirstOrDefault();
             GeneralizationId = gen?.Name ?? gen?.General;
             if (!string.IsNullOrEmpty(GeneralizationId))
             {
                 XmiElement? remoteType = null;
                 Generalization = PythonHelperMethods.TypeDeepSearch(model, GeneralizationId, out remoteType) ?? "";
+
+                // Python forbids subclassing an Enum that has members, so flatten:
+                // prepend parent members and drop the inheritance declaration.
+                if (remoteType is UmlEnumeration parentEnum)
+                {
+                    AddRange(model, parentEnum.Items);
+                    Generalization = null;
+                    GeneralizationId = null;
+                }
             }
+
+            AddRange(model, source.Items);
         }
 
         /// <summary>
