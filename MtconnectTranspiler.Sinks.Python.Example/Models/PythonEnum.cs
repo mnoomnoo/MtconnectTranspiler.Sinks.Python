@@ -53,10 +53,6 @@ namespace MtconnectTranspiler.Sinks.Python.Models
         // NOTE: Only used for CATEGORY types that have value enums.
         public Dictionary<string, string> ValueTypes { get; set; } = new Dictionary<string, string>();
 
-        public string? Generalization { get; set; }
-
-        public string? GeneralizationId { get; set; }
-
         /// <summary>
         /// Constructs an <see cref="PythonEnum"/> more generically. <b>NOTE</b>: You'll need to add items manually from here.
         /// </summary>
@@ -76,23 +72,6 @@ namespace MtconnectTranspiler.Sinks.Python.Models
         /// <param name="source">The source <see cref="UmlEnumeration"/> to convert into an <see cref="PythonEnum"/></param>
         public PythonEnum(XmiDocument model, UmlEnumeration source) : this(model, source, source.Name)
         {
-            var gen = source.Generalization?.FirstOrDefault();
-            GeneralizationId = gen?.Name ?? gen?.General;
-            if (!string.IsNullOrEmpty(GeneralizationId))
-            {
-                XmiElement? remoteType = null;
-                Generalization = PythonHelperMethods.TypeDeepSearch(model, GeneralizationId, out remoteType) ?? "";
-
-                // Python forbids subclassing an Enum that has members, so flatten:
-                // prepend parent members and drop the inheritance declaration.
-                if (remoteType is UmlEnumeration parentEnum)
-                {
-                    AddRange(model, parentEnum.Items);
-                    Generalization = null;
-                    GeneralizationId = null;
-                }
-            }
-
             AddRange(model, source.Items);
         }
 
