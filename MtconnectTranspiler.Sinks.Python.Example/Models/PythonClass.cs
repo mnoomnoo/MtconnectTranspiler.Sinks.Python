@@ -28,6 +28,15 @@ namespace MtconnectTranspiler.Sinks.Python.Models
         public Summary? Summary { get; protected set; }
 
         /// <summary>
+        /// Name with the generated <c>Class</c> / <c>Generalization</c> suffix stripped,
+        /// giving a clean Python identifier (e.g. <c>CuttingTool</c> instead of <c>CuttingToolClass</c>).
+        /// </summary>
+        public string CleanName =>
+            Name.EndsWith("Generalization") ? Name[..^"Generalization".Length] :
+            Name.EndsWith("Class")          ? Name[..^"Class".Length] :
+            Name;
+
+        /// <summary>
         /// Internal reference to the class filename.
         /// </summary>
         protected string? _filename { get; set; }
@@ -37,7 +46,7 @@ namespace MtconnectTranspiler.Sinks.Python.Models
             get
             {
                 if (string.IsNullOrEmpty(_filename))
-                    _filename = $"{CategoryFunctions.ToPathSafe(Namespace.Substring(Namespace.LastIndexOf(".")+1))}/{CategoryFunctions.ToPathSafe(Name.ToPascalCase())}.py";
+                    _filename = $"{CategoryFunctions.ToPathSafe(Namespace.Substring(Namespace.LastIndexOf(".")+1))}/{CategoryFunctions.ToPathSafe(CleanName.ToPascalCase())}.py";
                 return _filename;
             }
             set { _filename = value; }
