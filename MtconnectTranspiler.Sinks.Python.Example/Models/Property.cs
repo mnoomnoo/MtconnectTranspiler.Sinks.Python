@@ -35,9 +35,15 @@ namespace MtconnectTranspiler.Sinks.Python.Models
 
         /// <summary>
         /// UML multiplicity expressed as a range string, e.g. <c>"0..*"</c>, <c>"1..1"</c>.
-        /// Empty string when neither bound is specified in the model.
+        /// Unspecified bounds default to 1 (the UML default multiplicity).
         /// </summary>
         public string Multiplicity { get; set; }
+
+        /// <summary>
+        /// True when the upper multiplicity bound allows more than one value
+        /// (<c>*</c> or a number greater than 1), i.e. the property is list-valued.
+        /// </summary>
+        public bool IsCollection { get; set; }
 
         private XmiElement? _remoteType { get; set; }
 
@@ -65,7 +71,7 @@ namespace MtconnectTranspiler.Sinks.Python.Models
             OriginalPropertyType = source.PropertyType;
 
             Aggregation = source.Aggregation;
-            Extension = source.Extension?.Extender;
+            Extension = source.Extensions?.FirstOrDefault()?.Extender;
             Association = PythonHelperMethods.TypeDeepSearch(model, source.Association, out remoteType);
             if (source.DefaultValue is UmlInstanceValue instanceValue)
             {
@@ -75,9 +81,12 @@ namespace MtconnectTranspiler.Sinks.Python.Models
                 DefaultValue = source.DefaultValue?.Name;
             }
 
-            // Determine multiplicity from lowerValue (upperValue is not exposed on UmlProperty in this SDK version)
-            string lower = source.LowerValue?.Value;
-            Multiplicity = lower != null ? $"{lower}..*" : "";
+            // UML default multiplicity is 1..1; a missing value attribute on a bound
+            // element also means "unspecified" and is treated as 1.
+            string lower = source.LowerValue?.Value ?? "1";
+            string upper = source.UpperValue?.Value ?? "1";
+            Multiplicity = $"{lower}..{upper}";
+            IsCollection = upper == "*" || (int.TryParse(upper, out int upperBound) && upperBound > 1);
         }
 
     }

@@ -14,7 +14,7 @@ for item in source.properties
     if item.deprecated_reference != null
         continue
     end
-    snake_name = item.normative_name | to_snake_case | to_keyword_safe
+    snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe
     if seen_names[snake_name]
         continue
     end
@@ -117,17 +117,17 @@ class {{ clean_name }}({{ parent_ref }}):
 {{~ if simple_props.size > 0 || enum_props.size > 0 ~}}
 
 {{~ for item in simple_props ~}}
-{{~ snake_name = item.normative_name | to_snake_case | to_keyword_safe ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
 {{~ item_clean = item.type | to_python_type_name | to_code_safe | string.remove "." ~}}
-{{~ type_ann = item.multiplicity == "0..*" ? ("Optional[List[" + item_clean + "]]") : ("Optional[" + item_clean + "]") ~}}
+{{~ type_ann = item.is_collection ? ("Optional[List[" + item_clean + "]]") : ("Optional[" + item_clean + "]") ~}}
     {{ snake_name }}: {{ type_ann }}
 {{~ end ~}}
 {{~ for item in enum_props ~}}
 {{~ prop_ns    = (item.original_property_type | get_type_namespace | to_code_safe) ?? "" ~}}
 {{~ item_tname = item.type | to_pascal_case | to_code_safe | string.remove "." ~}}
 {{~ item_clean = item_tname | string.replace "MetaClass" "" ~}}
-{{~ snake_name = item.normative_name | to_snake_case | to_keyword_safe ~}}
-{{~ type_ann = item.multiplicity == "0..*" ? ("Optional[List[" + item_clean + "]]") : ("Optional[" + item_clean + "]") ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
+{{~ type_ann = item.is_collection ? ("Optional[List[" + item_clean + "]]") : ("Optional[" + item_clean + "]") ~}}
     {{ snake_name }}: {{ type_ann }}
 {{~ end ~}}
 {{~ end ~}}
@@ -135,17 +135,17 @@ class {{ clean_name }}({{ parent_ref }}):
     def __init__(
         self,
 {{~ for item in simple_props ~}}
-{{~ snake_name = item.normative_name | to_snake_case | to_keyword_safe ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
 {{~ item_clean = item.type | to_python_type_name | to_code_safe | string.remove "." ~}}
-{{~ type_ann = item.multiplicity == "0..*" ? ("Optional[List[" + item_clean + "]]") : ("Optional[" + item_clean + "]") ~}}
+{{~ type_ann = item.is_collection ? ("Optional[List[" + item_clean + "]]") : ("Optional[" + item_clean + "]") ~}}
         {{ snake_name }}: {{ type_ann }} = None,
 {{~ end ~}}
 {{~ for item in enum_props ~}}
 {{~ prop_ns    = (item.original_property_type | get_type_namespace | to_code_safe) ?? "" ~}}
 {{~ item_tname = item.type | to_pascal_case | to_code_safe | string.remove "." ~}}
 {{~ item_clean = item_tname | string.replace "MetaClass" "" ~}}
-{{~ snake_name = item.normative_name | to_snake_case | to_keyword_safe ~}}
-{{~ type_ann = item.multiplicity == "0..*" ? ("Optional[List[" + item_clean + "]]") : ("Optional[" + item_clean + "]") ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
+{{~ type_ann = item.is_collection ? ("Optional[List[" + item_clean + "]]") : ("Optional[" + item_clean + "]") ~}}
         {{ snake_name }}: {{ type_ann }} = None,
 {{~ end ~}}
 {{~ for item in part_props ~}}
@@ -154,23 +154,23 @@ class {{ clean_name }}({{ parent_ref }}):
 {{~ item_clean = item_tname | string.replace "Generalization" "" | string.replace "Class" "" ~}}
 {{~ ns_last    = prop_ns | string.split "." | array.last ~}}
 {{~ type_ref   = tname_counts[item_tname] > 1 ? (ns_last + "_" + item_clean) : item_clean ~}}
-{{~ snake_name = item.normative_name | to_snake_case | to_keyword_safe ~}}
-{{~ type_ann = item.multiplicity == "0..*" ? ("Optional[List[" + type_ref + "]]") : ("Optional[" + type_ref + "]") ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
+{{~ type_ann = item.is_collection ? ("Optional[List[" + type_ref + "]]") : ("Optional[" + type_ref + "]") ~}}
         {{ snake_name }}: {{ type_ann }} = None,
 {{~ end ~}}
         **kwargs,
     ):
         super().__init__(**kwargs)
 {{~ for item in simple_props ~}}
-{{~ snake_name = item.normative_name | to_snake_case | to_keyword_safe ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
         self.{{ snake_name }} = {{ snake_name }}
 {{~ end ~}}
 {{~ for item in enum_props ~}}
-{{~ snake_name = item.normative_name | to_snake_case | to_keyword_safe ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
         self.{{ snake_name }} = {{ snake_name }}
 {{~ end ~}}
 {{~ for item in part_props ~}}
-{{~ snake_name = item.normative_name | to_snake_case | to_keyword_safe ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
         self._{{ snake_name }} = {{ snake_name }}
 {{~ end ~}}
 {{~ # @property getters for part props ~}}
@@ -180,8 +180,8 @@ class {{ clean_name }}({{ parent_ref }}):
 {{~ item_clean = item_tname | string.replace "Generalization" "" | string.replace "Class" "" ~}}
 {{~ ns_last    = prop_ns | string.split "." | array.last ~}}
 {{~ type_ref   = tname_counts[item_tname] > 1 ? (ns_last + "_" + item_clean) : item_clean ~}}
-{{~ snake_name = item.normative_name | to_snake_case | to_keyword_safe ~}}
-{{~ type_ann = item.multiplicity == "0..*" ? ("Optional[List[" + type_ref + "]]") : ("Optional[" + type_ref + "]") ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
+{{~ type_ann = item.is_collection ? ("Optional[List[" + type_ref + "]]") : ("Optional[" + type_ref + "]") ~}}
 
     @property
     def {{ snake_name }}(self) -> {{ type_ann }}:
@@ -191,11 +191,11 @@ class {{ clean_name }}({{ parent_ref }}):
     def _populate(self, d: dict) -> None:
         super()._populate(d)
 {{~ for item in simple_props ~}}
-{{~ snake_name = item.normative_name | to_snake_case | to_keyword_safe ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
         self.{{ snake_name }} = d.get("{{ item.normative_name }}")
 {{~ end ~}}
 {{~ for item in enum_props ~}}
-{{~ snake_name = item.normative_name | to_snake_case | to_keyword_safe ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
         self.{{ snake_name }} = d.get("{{ item.normative_name }}")
 {{~ end ~}}
 {{~ for item in part_props ~}}
@@ -205,8 +205,8 @@ class {{ clean_name }}({{ parent_ref }}):
 {{~ ns_last    = prop_ns | string.split "." | array.last ~}}
 {{~ item_module = item_clean | to_path_safe ~}}
 {{~ type_ref   = tname_counts[item_tname] > 1 ? (ns_last + "_" + item_clean) : item_clean ~}}
-{{~ snake_name = item.normative_name | to_snake_case | to_keyword_safe ~}}
-{{~ is_list    = item.multiplicity == "0..*" ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
+{{~ is_list    = item.is_collection ~}}
         if "{{ item.normative_name }}" in d:
             from pymtconnect.Classes.{{ ns_last }}.{{ item_module }} import {{ item_clean }}{{ type_ref != item_clean ? (" as " + type_ref) : "" }}
             _v = self._unwrap(d["{{ item.normative_name }}"])
@@ -217,6 +217,27 @@ class {{ clean_name }}({{ parent_ref }}):
             if _items:
                 {{ if is_list }}self._{{ snake_name }} = [{{ type_ref }}.from_dict(_i) for _i in _items]{{ else }}self._{{ snake_name }} = {{ type_ref }}.from_dict(_items[0]){{ end }}
 {{~ end ~}}
+
+    def to_dict(self) -> dict:
+        """Serialize to a dictionary using the same keys as ``_populate``."""
+        d = super().to_dict()
+{{~ for item in simple_props ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
+        if self.{{ snake_name }} is not None:
+            d["{{ item.normative_name }}"] = self.{{ snake_name }}
+{{~ end ~}}
+{{~ for item in enum_props ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
+        if self.{{ snake_name }} is not None:
+            d["{{ item.normative_name }}"] = self.{{ snake_name }}
+{{~ end ~}}
+{{~ for item in part_props ~}}
+{{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
+{{~ is_list    = item.is_collection ~}}
+        if self._{{ snake_name }} is not None:
+            {{ if is_list }}d["{{ item.normative_name }}"] = [_i.to_dict() for _i in self._{{ snake_name }}]{{ else }}d["{{ item.normative_name }}"] = self._{{ snake_name }}.to_dict(){{ end }}
+{{~ end ~}}
+        return d
 
     @classmethod
     def from_dict(cls, d: dict) -> "{{ clean_name }}":
