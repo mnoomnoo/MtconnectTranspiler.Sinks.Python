@@ -23,7 +23,6 @@ Configuration lives in `appsettings.json` / `appsettings.Development.json`:
 
 ## Key directories
 ```
-MtconnectTranspiler.Sinks.Python/          # Python sink contracts (MTCEnum base class)
 MtconnectTranspiler.Sinks.Python.Example/  # Main C# executable
   Models/      # C# models: PythonClass, PythonEnum, PythonPackage, PythonClient, etc.
   Templates/   # Scriban templates that emit Python source files
