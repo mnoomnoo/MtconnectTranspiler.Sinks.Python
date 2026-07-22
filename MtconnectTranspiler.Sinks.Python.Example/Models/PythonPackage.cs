@@ -90,6 +90,18 @@ namespace MtconnectTranspiler.Sinks.Python.Example.Models
         /// </summary>
         public Summary Summary { get; protected set; }
 
+        /// <summary>
+        /// Removes classes (recursively through sub-packages) whose xmi:id is not in
+        /// <paramref name="keptClassIds"/>, keeping package imports consistent with the
+        /// set of class files actually generated.
+        /// </summary>
+        public void PruneClasses(ISet<string> keptClassIds)
+        {
+            _classes = _classes.Where(c => c.ReferenceId != null && keptClassIds.Contains(c.ReferenceId)).ToList();
+            foreach (var package in _packages)
+                package.PruneClasses(keptClassIds);
+        }
+
         public PythonPackage(XmiDocument model, UmlPackage source) : base(model, source)
         {
             _name = PythonHelperMethods.ToPascalCase(source.Name);

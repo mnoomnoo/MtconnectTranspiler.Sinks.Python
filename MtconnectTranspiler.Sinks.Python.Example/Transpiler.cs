@@ -82,6 +82,39 @@ namespace MtconnectTranspiler.Sinks.Python.Example
             var regex = new Regex(@"\" + String.Join(@"|\", invalidFileCharacters), RegexOptions.Compiled);
             return regex.Replace(input, replaceBy);
         }
+        public static string ToSnakeCase(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+            return input.ToSnakeCase();
+        }
+        /// <summary>
+        /// Maps a SysML / C#-derived type name to the corresponding Python built-in
+        /// or strips the <c>MetaClass</c> suffix for enum references.
+        /// </summary>
+        public static string ToPythonTypeName(string typeName)
+        {
+            if (string.IsNullOrEmpty(typeName)) return "object";
+            return typeName switch
+            {
+                "String"         => "str",
+                "Boolean"        => "bool",
+                "Integer"        => "int",
+                "Int32"          => "int",
+                "Int64"          => "int",
+                "UInt32"         => "int",
+                "UInt64"         => "int",
+                "Float"          => "float",
+                "Single"         => "float",
+                "Double"         => "float",
+                "float[]"        => "list",
+                "float[3]"       => "list",
+                "DateTime"       => "str",
+                "DateTimeOffset" => "str",
+                "object"         => "object",
+                _ when typeName.EndsWith("MetaClass") => typeName[..^"MetaClass".Length],
+                _ => typeName,
+            };
+        }
         public static string? GetTypeNamespace(string referenceId)
             => TypeCache.GetTypeNamespaceFromId(referenceId);
         public static string[] GetClassNamespaces(PythonClass cSharpClass)
@@ -137,7 +170,7 @@ namespace MtconnectTranspiler.Sinks.Python.Example
 
             //// Process the template into enum files
             var allPackages = new List<PythonPackage>();
-            var allClasses = new List<PythonClass>();
+            var allClassesRaw = new List<PythonClass>();
             var allEnumerations = new List<PythonEnum>();
             // TODO: Add Operations; aka functions
             MtconnectModel rootPackage = new MtconnectModel(model, model.Model);
@@ -149,10 +182,10 @@ namespace MtconnectTranspiler.Sinks.Python.Example
                 if (subpackages.Any())
                     allPackages.AddRange(subpackages);
 
-                // Classes
+                // Classes — collect all first, filter in second pass
                 var classes = getClasses(model, package);
                 if (classes.Any())
-                    allClasses.AddRange(classes);
+                    allClassesRaw.AddRange(classes);
 
                 // Enumerations
                 var enumerations = getEnums(model, package);
@@ -172,10 +205,10 @@ namespace MtconnectTranspiler.Sinks.Python.Example
                         if (subpackages.Any())
                             allPackages.AddRange(subpackages);
 
-                        // Classes
+                        // Classes — collect all first, filter in second pass
                         var classes = getClasses(model, package);
                         if (classes.Any())
-                            allClasses.AddRange(classes);
+                            allClassesRaw.AddRange(classes);
 
                         // Enumerations
                         var enumerations = getEnums(model, package);
@@ -184,6 +217,23 @@ namespace MtconnectTranspiler.Sinks.Python.Example
                     }
                 }
             }
+
+            // Second pass: build the set of names referenced as generalizations,
+            // then filter out classes that have no properties AND are not parents.
+            var generalizationNames = new HashSet<string>(
+                allClassesRaw
+                    .Where(c => !string.IsNullOrEmpty(c.Generalization))
+                    .Select(c => c.Generalization),
+                StringComparer.Ordinal);
+            var allClasses = allClassesRaw.Where(c => ShouldGenerateClass(c, generalizationNames)).ToList();
+
+            // Keep package imports consistent with the classes actually emitted:
+            // prune skipped classes from every package (recursively) by xmi:id.
+            var keptClassIds = new HashSet<string>(
+                allClasses.Where(c => c.ReferenceId != null).Select(c => c.ReferenceId!),
+                StringComparer.Ordinal);
+            foreach (var package in allPackages)
+                package.PruneClasses(keptClassIds);
 
             string outputPath = Path.Combine(_generator.OutputPath, "pymtconnect");
             Directory.CreateDirectory(outputPath);
@@ -195,6 +245,9 @@ namespace MtconnectTranspiler.Sinks.Python.Example
             _logger?.LogInformation("Saving Enums...");
             _generator.ProcessTemplate(allEnumerations, Path.Combine(outputPath, "Enums"), true);
 
+            _logger?.LogInformation("Writing base.py...");
+            _generator.ProcessTemplate(new PythonBase(), outputPath, true);
+
             _logger?.LogInformation("Saving Root Package...");
             _generator.ProcessTemplate(rootPackage, outputPath, true);
 
@@ -202,9 +255,13 @@ namespace MtconnectTranspiler.Sinks.Python.Example
             var clientFile = new PythonClient(model, model.Model, rootPackage.Packages);
             _generator.ProcessTemplate(clientFile, outputPath, true);
 
-            _logger?.LogInformation("Saving Example File...");
-            var exampleFile = new PythonExample(model, model.Model, rootPackage.Packages);
-            _generator.ProcessTemplate(exampleFile, outputPath, true);
+            _logger?.LogInformation("Saving Probe Example File...");
+            var probeExampleFile = new PythonProbeDeepExample(model, model.Model, rootPackage.Packages);
+            _generator.ProcessTemplate(probeExampleFile, outputPath, true);
+
+            _logger?.LogInformation("Writing top-level __init__.py...");
+            var initModule = new PythonInit(allClasses, allEnumerations);
+            _generator.ProcessTemplate(initModule, outputPath, true);
 
             _logger?.LogInformation("Writing pyproject.toml...");
             var projectFile = new PythonProject(model, model.Model);
@@ -212,6 +269,21 @@ namespace MtconnectTranspiler.Sinks.Python.Example
 
             _logger?.LogInformation("Writing __init__.py files...");
             CreateInitFiles(outputPath);
+        }
+
+        /// <summary>
+        /// Returns true if the class should be generated.
+        /// Skips classes that have no non-deprecated properties, are not used as a parent
+        /// by any other class, AND have no parent themselves — they would produce an empty
+        /// file with no purpose. Property-less subclasses (e.g. DoorInterface, FileArchetype)
+        /// are kept: they are distinct types referenced by package modules.
+        /// </summary>
+        private static bool ShouldGenerateClass(PythonClass cls, HashSet<string> generalizationNames)
+        {
+            bool hasProperties = cls.Properties.Any(p => p.DeprecatedReference == null);
+            bool isParent = generalizationNames.Contains(cls.Name);
+            bool isSubclass = !string.IsNullOrEmpty(cls.Generalization);
+            return hasProperties || isParent || isSubclass;
         }
 
         private static void CreateInitFiles(string outputPath)

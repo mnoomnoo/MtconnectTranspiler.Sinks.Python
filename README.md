@@ -28,6 +28,8 @@ Output is written to `dist/`.
 
 https://test.pypi.org/help/#apitoken shows how to setup PyPI API tokens for uploading
 
+Check version number in pyproject.toml (move it up, PyPI wont overwrite a package)
+
 ### Upload to TestPyPI:
 
 ```bash
@@ -38,3 +40,22 @@ python -m twine upload --repository testpypi dist/*
 ```bash
 python -m twine upload dist/*
 ```
+
+# Install from TestPyPI
+
+When installing a project from TestPyPI, its database is separate from live PyPI. This might cause the installation to fail because the package's dependencies likely do not exist on the test server (TestPyPI).
+
+Use `--extra-index-url https://pypi.org/simple/` to direct pip to use the normal PyPI server for dependencies.
+
+```bash
+pip install -i https://test.pypi.org/simple/ pymtconnect --extra-index-url https://pypi.org/simple/
+```
+
+Use `pymtconnect==<version>` to specify a version of pymtconnect to install
+
+```bash
+ pip install -i https://test.pypi.org/simple/ pymtconnect==<version> --extra-index-url https://pypi.org/simple/
+```
+
+
+

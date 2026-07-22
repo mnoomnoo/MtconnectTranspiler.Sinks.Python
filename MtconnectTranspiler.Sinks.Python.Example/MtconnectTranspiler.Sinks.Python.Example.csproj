@@ -15,17 +15,20 @@
 
   <ItemGroup>
     <PackageReference Include="Consoul" Version="1.6.6" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageReference Include="MtconnectTranspiler" Version="2.4.0" />
-    <PackageReference Include="MtconnectTranspiler.CodeGenerators.ScribanTemplates" Version="2.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
+    <PackageReference Include="MtconnectTranspiler" Version="2.7.0" />
+    <PackageReference Include="MtconnectTranspiler.CodeGenerators.ScribanTemplates" Version="2.6.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Templates\Python.Base.scriban">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Templates\Python.Model.scriban">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -41,7 +44,10 @@
     <Content Include="Templates\Python.Client.scriban">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Templates\Python.Example.scriban">
+    <Content Include="Templates\Python.Init.scriban">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\Python.ProbeDeepExample.scriban">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Templates\Python.PyProject.scriban">

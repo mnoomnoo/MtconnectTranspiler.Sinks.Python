@@ -6,20 +6,22 @@ using MtconnectTranspiler.Xmi.UML;
 namespace MtconnectTranspiler.Sinks.Python.Example.Models
 {
     /// <summary>
-    /// Generates an <c>example.py</c> file that demonstrates how to consume
-    /// the generated MTConnect Python package.
+    /// Generates a <c>probe_example.py</c> file that probes an MTConnect agent,
+    /// fully fills <see cref="HeaderClass"/> and <see cref="DeviceClass"/> via
+    /// <c>from_dict()</c>, and walks the complete raw device/component/data-item
+    /// JSON tree.
     /// </summary>
-    [ScribanTemplate("Python.Example.scriban")]
-    public class PythonExample : PythonType, IFileSource
+    [ScribanTemplate("Python.ProbeDeepExample.scriban")]
+    public class PythonProbeDeepExample : PythonType, IFileSource
     {
         /// <inheritdoc />
-        public string Filename { get => "example.py"; set { } }
+        public string Filename { get => "probe_example.py"; set { } }
 
         private readonly List<PythonPackage> _packages;
         /// <summary>Top-level packages exposed to the Scriban template as <c>source.packages</c>.</summary>
         public IEnumerable<PythonPackage> Packages => _packages;
 
-        public PythonExample(XmiDocument doc, UmlModel source, IEnumerable<PythonPackage> packages)
+        public PythonProbeDeepExample(XmiDocument doc, UmlModel source, IEnumerable<PythonPackage> packages)
             : base(doc, source)
         {
             _packages = packages.ToList();
