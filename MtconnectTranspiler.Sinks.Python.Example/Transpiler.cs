@@ -267,6 +267,10 @@ namespace MtconnectTranspiler.Sinks.Python.Example
             var projectFile = new PythonProject(model, model.Model);
             _generator.ProcessTemplate(projectFile, _generator.OutputPath, true);
 
+            _logger?.LogInformation("Writing README.md...");
+            var readmeFile = new PythonReadme(model, model.Model);
+            _generator.ProcessTemplate(readmeFile, _generator.OutputPath, true);
+
             _logger?.LogInformation("Writing __init__.py files...");
             CreateInitFiles(outputPath);
         }

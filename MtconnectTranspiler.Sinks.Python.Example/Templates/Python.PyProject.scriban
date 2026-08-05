@@ -16,3 +16,12 @@ dependencies = [
 where = ["."]
 exclude = ["__pycache__*", "example*"]
 
+[project.urls]
+Homepage = "https://github.com/mnoomnoo/MtconnectTranspiler.Sinks.Python"
+Issues = "https://github.com/mnoomnoo/MtconnectTranspiler.Sinks.Python/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+
+
