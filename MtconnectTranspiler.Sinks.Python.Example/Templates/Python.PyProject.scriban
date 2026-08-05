@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pymtconnect"
-version = "0.1.6"
+version = "1.0.0"
 description = "Python model classes generated from the MTConnect SysML specification"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.10"
