@@ -156,9 +156,9 @@ def _parse_current(data: dict):
                     # Inject the observation type as the "type" key so
                     # Event.from_dict can populate it.
                     events.append(Event.from_dict({**obs, "type": evt_type}))
-            for cond_type, obs_list in _iter_typed(cs.get("Conditions", {})):
+            for cond_state, obs_list in _iter_typed(cs.get("Conditions", {})):
                 for obs in _iter_list(obs_list):
-                    conditions.append(Condition.from_dict({**obs, "type": cond_type}))
+                    conditions.append(Condition.from_dict({**obs, "state": cond_state}))
 
     return header, events, conditions
 
