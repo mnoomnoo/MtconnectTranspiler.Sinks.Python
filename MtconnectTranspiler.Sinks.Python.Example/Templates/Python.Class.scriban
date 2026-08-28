@@ -192,11 +192,19 @@ class {{ clean_name }}({{ parent_ref }}):
         super()._populate(d)
 {{~ for item in simple_props ~}}
 {{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
+{{~ if item.json_read_alias ~}}
+        self.{{ snake_name }} = d.get("{{ item.json_read_alias }}", d.get("{{ item.normative_name }}"))
+{{~ else ~}}
         self.{{ snake_name }} = d.get("{{ item.normative_name }}")
+{{~ end ~}}
 {{~ end ~}}
 {{~ for item in enum_props ~}}
 {{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
+{{~ if item.json_read_alias ~}}
+        self.{{ snake_name }} = d.get("{{ item.json_read_alias }}", d.get("{{ item.normative_name }}"))
+{{~ else ~}}
         self.{{ snake_name }} = d.get("{{ item.normative_name }}")
+{{~ end ~}}
 {{~ end ~}}
 {{~ for item in part_props ~}}
 {{~ prop_ns    = (item.original_property_type | get_type_namespace | to_code_safe) ?? "" ~}}
@@ -207,9 +215,15 @@ class {{ clean_name }}({{ parent_ref }}):
 {{~ type_ref   = tname_counts[item_tname] > 1 ? (ns_last + "_" + item_clean) : item_clean ~}}
 {{~ snake_name = item.normative_name | to_snake_case | to_code_safe | to_keyword_safe ~}}
 {{~ is_list    = item.is_collection ~}}
+{{~ if item.json_read_alias ~}}
+        if "{{ item.json_read_alias }}" in d or "{{ item.normative_name }}" in d:
+            from pymtconnect.Classes.{{ ns_last }}.{{ item_module }} import {{ item_clean }}{{ type_ref != item_clean ? (" as " + type_ref) : "" }}
+            _v = self._unwrap(d.get("{{ item.json_read_alias }}", d.get("{{ item.normative_name }}")))
+{{~ else ~}}
         if "{{ item.normative_name }}" in d:
             from pymtconnect.Classes.{{ ns_last }}.{{ item_module }} import {{ item_clean }}{{ type_ref != item_clean ? (" as " + type_ref) : "" }}
             _v = self._unwrap(d["{{ item.normative_name }}"])
+{{~ end ~}}
             if isinstance(_v, (dict, list)):
                 _items = self._flatten(_v) if isinstance(_v, list) else [_v]
             else:
