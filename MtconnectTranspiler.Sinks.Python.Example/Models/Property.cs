@@ -14,6 +14,14 @@ namespace MtconnectTranspiler.Sinks.Python.Models
         public string NormativeName { get; set; }
 
         /// <summary>
+        /// The JSON key MTConnect Agents actually use for this property in REST/JSON
+        /// observation responses, when it differs from <see cref="NormativeName"/>.
+        /// Checked first in generated <c>_populate()</c> methods, falling back to
+        /// <see cref="NormativeName"/> for backward compatibility.
+        /// </summary>
+        public string? JsonReadAlias { get; set; }
+
+        /// <summary>
         /// Reference to any Comments written in the SysML model to be converted into a Python format <c>&lt;summary /&gt;</c>
         /// </summary>
         public Summary Summary { get; protected set; }
@@ -55,6 +63,15 @@ namespace MtconnectTranspiler.Sinks.Python.Models
         public Property(XmiDocument model, UmlProperty source) : base(model, source)
         {
             NormativeName = source.Name;
+
+            // MTConnect Agents serialize the Observation "result" attribute under the
+            // JSON key "value" in REST/JSON responses, not "result" as the UML model's
+            // normative name would suggest. See:
+            // https://github.com/mnoomnoo/MtconnectTranspiler.Sinks.Python/issues/5
+            if (NormativeName == "result")
+            {
+                JsonReadAlias = "value";
+            }
 
             if (source.Comments?.Length > 0)
                 Summary = new Summary(source.Comments);

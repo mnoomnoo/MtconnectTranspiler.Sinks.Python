@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pymtconnect"
-version = "1.0.0"
+version = "1.0.1"
 description = "Python model classes generated from the MTConnect SysML specification"
 readme = "README.md"
 license = { text = "Apache-2.0" }
