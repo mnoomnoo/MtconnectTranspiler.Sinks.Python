@@ -1,61 +1,39 @@
 # MtconnectTranspiler.Sinks.Python
-This is an implementation of the [MtconnectTranspiler](https://github.com/mtconnect/MtconnectTranspiler) with the purpose of providing tools to generate Python files from the object-oriented model.
 
-# Program arguments
+This is an implementation of the [MtconnectTranspiler](https://github.com/mtconnect/MtconnectTranspiler) that generates a complete Python package — classes, enums, and packages — from the [MTConnect](https://www.mtconnect.org/) SysML/UML model.
 
-In `MtconnectTranspiler.Sinks.Python.Example/Properties/launchSettings.json` you can edit program arguments.
+## Requirements
 
-First argument is the directory to place the generated output. The second directory is an optional argument
+- .NET 8.0 SDK
 
-Example: `"commandLineArgs":
-        "\"$(SolutionDir)my_output\" \"/path/to/my/model/MTConnectSysMLModel.xml\""`
+## Build & run
 
-# Build and upload Python package
-
-## Prerequisites
-- `build`: `pip install build`
-- `twine`: `pip install twine`
-
-## Build the wheel
+Build the example project:
 
 ```bash
-python -m build
+dotnet build MtconnectTranspiler.Sinks.Python.Example/MtconnectTranspiler.Sinks.Python.Example.csproj
 ```
 
-Output is written to `dist/`.
-
-## Upload to PyPI or TestPyPI
-
-https://test.pypi.org/help/#apitoken shows how to setup PyPI API tokens for uploading
-
-Check version number in pyproject.toml (move it up, PyPI wont overwrite a package)
-
-### Upload to TestPyPI:
+Run it, passing the output directory as the first argument and, optionally, a path to a local model file:
 
 ```bash
-python -m twine upload --repository testpypi dist/*
+dotnet run --project MtconnectTranspiler.Sinks.Python.Example <OutputPath> [--ModelPath <path>]
 ```
 
-### Upload to PyPI:
-```bash
-python -m twine upload dist/*
+If `--ModelPath` is omitted, the latest model is downloaded from GitHub. These same settings — `OutputPath` and `ModelPath` — can also be set in `appsettings.json` / `appsettings.Development.json` instead of passing them on the command line.
+
+When running from an IDE (e.g. pressing F5 in Visual Studio), edit the arguments in `MtconnectTranspiler.Sinks.Python.Example/Properties/launchSettings.json` instead, for example:
+
+```json
+"commandLineArgs": "\"$(SolutionDir)my_output\" \"/path/to/my/model/MTConnectSysMLModel.xml\""
 ```
 
-# Install from TestPyPI
+## Output
 
-When installing a project from TestPyPI, its database is separate from live PyPI. This might cause the installation to fail because the package's dependencies likely do not exist on the test server (TestPyPI).
+The generator writes a complete Python package to the output directory. See the generated package's own `README.md` for details on the package layout and how to use the generated classes (`from_dict`/`to_dict`/`to_json` serialization, the `mtconnect_client` helpers for querying a live agent, etc.).
 
-Use `--extra-index-url https://pypi.org/simple/` to direct pip to use the normal PyPI server for dependencies.
+The generated package is published on PyPI as [pymtconnect](https://pypi.org/project/pymtconnect).
 
-```bash
-pip install -i https://test.pypi.org/simple/ pymtconnect --extra-index-url https://pypi.org/simple/
-```
+## License
 
-Use `pymtconnect==<version>` to specify a version of pymtconnect to install
-
-```bash
- pip install -i https://test.pypi.org/simple/ pymtconnect==<version> --extra-index-url https://pypi.org/simple/
-```
-
-
-
+Apache-2.0
